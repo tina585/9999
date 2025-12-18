@@ -1,0 +1,10 @@
+[build]
+  # 這是一個靜態網站，不需要建置命令
+  command = ""
+  publish = "."
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
