@@ -1,0 +1,665 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Microsoft JhengHei', Arial, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image: url('POT/S__4005892.jpg');
+    background-color: transparent;
+    background-size: cover;
+    background-position: center 60px;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+/* 背景柔和波浪動畫 - 已移除 */
+
+@keyframes waveFloat {
+    from {
+        transform: translateY(-10px);
+    }
+    to {
+        transform: translateY(10px);
+    }
+}
+
+.app-container {
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+}
+
+/* 導覽列 */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: white;
+    backdrop-filter: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.navbar-gratitude-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    width: 50px;
+    background-color: transparent;
+    border-radius: 50%;
+}
+
+.home-logo {
+    text-decoration: none;
+    color: #ffffff;
+}
+
+.home-logo svg {
+    width: 24px;
+    height: 24px;
+    color: #ffffff;
+}
+
+/* 波浪分隔區塊 */
+.wave-divider {
+    display: none;
+}
+
+/* 頂部區域 */
+.top-section {
+    min-height: 180px;
+    position: relative;
+    padding: 0 20px 8px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin-top: -40px;
+}
+
+.upload-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    order: 2;
+    margin-top: -140px;
+}
+
+.upload-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.photo-fab {
+    position: fixed;
+    right: 110px;
+    bottom: 16px;
+    display: block;
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: transparent;
+    box-shadow: none;
+    transition: transform 0.2s ease;
+    z-index: 1200;
+}
+
+.photo-fab-guide {
+    position: fixed;
+    right: 10px;
+    bottom: 124px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+    z-index: 1201;
+    animation: arrowBounce 1.2s ease-in-out infinite;
+}
+
+.photo-fab-text-img {
+    max-width: 300px;
+    height: auto;
+    display: block;
+}
+
+.photo-fab-arrow {
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 16px solid #3f3f3f;
+}
+
+.photo-fab img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.photo-fab:hover {
+    transform: translateY(-2px);
+}
+
+.photo-fab:active {
+    transform: translateY(0);
+}
+
+.photo-fab-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+/* 左下角吉祥物 */
+.mascot-container {
+    position: absolute;
+    left: 96px;
+    top: 480px;
+    z-index: 900;
+    pointer-events: none;
+    animation: mascotFloat 3s ease-in-out infinite;
+}
+
+.mascot-img {
+    width: 350px;
+    height: auto;
+    display: block;
+}
+
+@media (max-width: 600px) {
+    .mascot-img {
+        width: 150px;
+    }
+}
+
+@keyframes mascotFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+/* 下指箭頭，置於按鈕上方 */
+.button-guide-top {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 24px;
+    pointer-events: none;
+    transform: translateY(74px); /* move further down */
+}
+
+.guide-arrow-down {
+    width: 0;
+    height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 18px solid #3f3f3f;
+    display: block;
+    animation: arrowBounce 1.2s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+}
+
+.hero-message {
+    text-align: left;
+    color: #3f3f3f;
+    font-weight: 700;
+    line-height: 1.6;
+    margin-bottom: 0;
+    text-shadow: none;
+    display: inline-block;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    position: relative;
+    z-index: 10;
+    box-shadow: none;
+    overflow: visible;
+    align-self: center;
+    order: 1;
+    animation: gentleShake 3s ease-in-out infinite;
+}
+
+@keyframes gentleShake {
+    0%, 100% {
+        transform: translateX(0) translateY(0) rotate(0deg);
+    }
+    25% {
+        transform: translateX(-2px) translateY(1px) rotate(-0.5deg);
+    }
+    50% {
+        transform: translateX(2px) translateY(-1px) rotate(0.5deg);
+    }
+    75% {
+        transform: translateX(-1px) translateY(1px) rotate(-0.3deg);
+    }
+}
+
+.hero-message p {
+    margin: 6px 0;
+    font-size: 18px;
+    position: relative;
+    z-index: 1;
+}
+
+.ruby-line {
+    display: block;
+    letter-spacing: 4px;
+    white-space: nowrap;
+}
+
+.ruby-line ruby {
+    ruby-position: inter-character;
+    ruby-align: center;
+    margin: 0 2px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.ruby-line rt {
+    display: inline-block;
+    writing-mode: vertical-rl;
+    font-size: 12px;
+    line-height: 1;
+    margin-left: 2px;
+    position: relative;
+    padding-right: 6px;
+}
+
+.ruby-line .tone {
+    writing-mode: horizontal-tb;
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    line-height: 1;
+}
+
+.ruby-line .tone-dot {
+    left: 50%;
+    right: auto;
+    top: -4px;
+    transform: translate(-50%, -50%);
+}
+
+
+/* 中間大圓圈 */
+.main-circle {
+    width: 320px;
+    height: 320px;
+    background: none;
+    border: none;
+    padding: 0;
+    border-radius: 100%;
+    position: relative;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* upload-guide removed per request */
+
+.main-circle:hover {
+    transform: scale(1.05);
+}
+
+.main-circle:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+}
+
+.main-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* 家長模式按鈕 */
+.parent-mode-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.parent-mode-btn-img {
+    width: auto;
+    height: auto;
+    max-width: 130px;
+    max-height: 130px;
+    display: block;
+    pointer-events: none;
+}
+
+
+/* 波浪區域 */
+
+.wave-section:hover {
+    opacity: 0.9;
+}
+
+.wave-section.has-image {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* 下方網格區域 */
+.grid-section {
+    background: transparent;
+    padding: 0;
+    min-height: 0;
+}
+
+.card-grid {
+    display: none;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    max-width: 1080px;
+    margin: 0 auto;
+}
+
+.grid-section,
+.card-grid,
+.card {
+    display: none;
+}
+
+/* 響應式設計：適配不同螢幕尺寸 */
+/* 平板和中等螢幕 (769px - 1024px) */
+@media (max-width: 1024px) {
+    .navbar {
+        padding: 0 20px;
+        height: 60px;
+    }
+
+    .navbar-gratitude-text {
+        font-size: 16px;
+    }
+
+    .parent-mode-btn-img {
+        max-width: 55px;
+        max-height: 22px;
+    }
+
+    .main-circle {
+        width: 220px;
+        height: 220px;
+    }
+
+    .top-section {
+        min-height: 160px;
+    }
+}
+
+/* 手機橫向和小平板 (481px - 768px) */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0 16px;
+        height: 56px;
+    }
+
+    .navbar-gratitude-text {
+        font-size: 14px;
+    }
+
+    .navbar-logo {
+        width: 40px;
+        height: 40px;
+    }
+
+    .parent-mode-btn-img {
+        max-width: 50px;
+        max-height: 20px;
+    }
+
+    .main-circle {
+        width: 190px;
+        height: 190px;
+        top: 80px;
+    }
+
+    .top-section {
+        min-height: 140px;
+    }
+
+    .hero-message img {
+        max-width: 70% !important;
+    }
+
+    .photo-fab {
+        width: 60px;
+        height: 60px;
+    }
+
+    .mascot-img {
+        width: 120px;
+        height: auto;
+    }
+}
+
+/* 手機直向 (最大 480px) */
+@media (max-width: 480px) {
+    .navbar {
+        padding: 0 12px;
+        height: 50px;
+    }
+
+    .navbar-gratitude-text {
+        font-size: 12px;
+        letter-spacing: 0.3px;
+    }
+
+    .navbar-logo {
+        width: 35px;
+        height: 35px;
+    }
+
+    .parent-mode-btn-img {
+        max-width: 45px;
+        max-height: 18px;
+    }
+
+    .main-circle {
+        width: 150px;
+        height: 150px;
+        top: 60px;
+    }
+
+    .top-section {
+        min-height: 120px;
+    }
+
+    .hero-message img {
+        max-width: 80% !important;
+    }
+
+    .photo-fab {
+        width: 50px;
+        height: 50px;
+    }
+
+    .photo-fab-text-img {
+        max-width: 80px;
+    }
+
+    .mascot-img {
+        width: 100px;
+        height: auto;
+    }
+}
+
+/* 大螢幕 (1400px 以上) */
+@media (min-width: 1400px) {
+    .navbar {
+        padding: 0 40px;
+        height: 80px;
+    }
+
+    .navbar-gratitude-text {
+        font-size: 20px;
+    }
+
+    .main-circle {
+        width: 280px;
+        height: 280px;
+    }
+
+    .top-section {
+        min-height: 200px;
+    }
+}
+
+/* 超小螢幕 (最大 360px) */
+@media (max-width: 360px) {
+    .navbar {
+        padding: 0 10px;
+        height: 48px;
+    }
+
+    .navbar-gratitude-text {
+        font-size: 11px;
+    }
+
+    .main-circle {
+        width: 130px;
+        height: 130px;
+        top: 50px;
+    }
+
+    .photo-fab {
+        width: 45px;
+        height: 45px;
+    }
+
+    .mascot-img {
+        width: 80px;
+    }
+}
+
+/* 底部色塊 */
+.bottom-color-block {
+    display: none;
+}
+
+/* 錄音停止按鈕自訂圖片 */
+.recording-stop-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    width: 140px !important;
+    height: auto !important;
+}
+
+.recording-stop-img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.recording-mic-img {
+    width: 40px;
+    height: auto;
+    display: block;
+}
+
+/* 拍照模式按鈕圖片 */
+.camera-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    width: 120px !important;
+    height: auto !important;
+}
+
+.camera-btn-img {
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+}
+
+/* 重新錄音按鈕自訂圖片 */
+.recording-redo-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    width: 150px !important;
+    height: 106px !important;
+}
+
+.recording-redo-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+}
+
+/* 確認按鈕自訂圖片 */
+.recording-confirm-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    width: 150px !important;
+    height: 106px !important;
+}
+
+.recording-confirm-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+}

@@ -1,0 +1,11 @@
+[build]
+  # 這是一個靜態網站，不需要建置命令
+  command = "echo 'Static site no build command'"
+  publish = "."
+  # 移除 base 設置，避免與發布目錄衝突
+
+# 重定向規則：所有路徑都重定向到 index.html（用於單頁應用）
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

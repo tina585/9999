@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拍照模式</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 頂部導覽列 */
+        .camera-header {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            position: relative;
+        }
+
+        .camera-header .home-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .camera-header .home-btn img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .camera-header .title {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* 相機預覽區域 */
+        .camera-preview-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            padding: 20px;
+        }
+
+        .camera-preview-container video {
+            max-width: 90%;
+            max-height: 70vh;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        /* 拍照按鈕區域 */
+        .camera-controls {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 24px;
+            padding-bottom: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            z-index: 100;
+            margin-top: -40px;
+        }
+
+        .camera-btn {
+            background: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .camera-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .camera-btn:active {
+            transform: scale(0.95);
+        }
+
+        .camera-btn img {
+            width: 80px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .camera-cancel-btn img {
+            width: 100px;
+            height: auto;
+        }
+
+        /* 變裝模板選單 */
+        .costume-template-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .costume-template-modal.active {
+            display: flex;
+        }
+
+        .costume-template-content {
+            background: #fff6e8;
+            border-radius: 12px;
+            padding: 24px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        /* 右上角取消按鈕 */
+        .costume-template-close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        
+        .costume-template-close-btn:hover {
+            background: #e5e7eb;
+            color: #374151;
+            transform: scale(1.1);
+        }
+        
+        .costume-template-close-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* 右下角確認按鈕 */
+        .costume-template-confirm-btn {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #FEAC3C;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.2s ease;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(254, 172, 60, 0.4);
+        }
+        
+        .costume-template-confirm-btn:hover {
+            background: #f5a623;
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(254, 172, 60, 0.5);
+        }
+        
+        .costume-template-confirm-btn:active {
+            transform: scale(0.95);
+        }
+
+        .costume-template-content h3 {
+            margin: 0 0 20px 0;
+            font-size: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .costume-template-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            width: 100%;
+            margin-bottom: 80px;
+        }
+
+        .costume-template-item {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .costume-template-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .costume-template-item.active {
+            border-color: #FEAC3C;
+            box-shadow: 0 0 0 2px rgba(254, 172, 60, 0.3);
+        }
+
+        .costume-template-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* 拍照後的預覽區域 */
+        .photo-preview {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: #000;
+            z-index: 500;
+        }
+
+        .photo-preview.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .photo-preview img {
+            flex: 1;
+            width: 100%;
+            object-fit: contain;
+        }
+
+        .photo-preview-actions {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .photo-preview-btn {
+            background: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-preview-btn img {
+            width: 60px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        /* 響應式設計：適配不同螢幕尺寸 */
+        /* 平板和中等螢幕 (768px - 1024px) */
+        @media (max-width: 1024px) {
+            .camera-preview-container {
+                padding: 16px;
+            }
+
+            .camera-preview-container video {
+                max-width: 95%;
+                max-height: 75vh;
+            }
+
+            .camera-controls {
+                padding: 20px;
+                padding-bottom: 10px;
+                gap: 20px;
+                margin-top: -35px;
+            }
+
+            .camera-btn img {
+                width: 70px;
+            }
+
+            .camera-cancel-btn img {
+                width: 85px;
+            }
+
+            .camera-header {
+                padding: 12px;
+            }
+
+            .camera-header .title {
+                font-size: 16px;
+            }
+        }
+
+        /* 手機橫向和小平板 (481px - 768px) */
+        @media (max-width: 768px) {
+            .camera-preview-container {
+                padding: 12px;
+            }
+
+            .camera-preview-container video {
+                max-width: 98%;
+                max-height: 70vh;
+            }
+
+            .camera-controls {
+                padding: 16px;
+                padding-bottom: 8px;
+                gap: 16px;
+                margin-top: -30px;
+            }
+
+            .camera-btn img {
+                width: 60px;
+            }
+
+            .camera-cancel-btn img {
+                width: 70px;
+            }
+
+            .camera-header {
+                padding: 10px;
+            }
+
+            .camera-header .title {
+                font-size: 14px;
+            }
+
+            .camera-header .home-btn img {
+                width: 32px;
+                height: 32px;
+            }
+
+            .costume-template-content {
+                padding: 16px;
+                max-width: 95%;
+            }
+
+            .costume-template-grid {
+                gap: 12px;
+            }
+
+            .photo-preview-btn img {
+                width: 50px;
+            }
+        }
+
+        /* 手機直向 (最大 480px) */
+        @media (max-width: 480px) {
+            .camera-preview-container {
+                padding: 8px;
+            }
+
+            .camera-preview-container video {
+                max-width: 100%;
+                max-height: 65vh;
+            }
+
+            .camera-controls {
+                padding: 12px;
+                padding-bottom: 6px;
+                gap: 12px;
+                margin-top: -20px;
+            }
+
+            .camera-btn img {
+                width: 50px;
+            }
+
+            .camera-cancel-btn img {
+                width: 60px;
+            }
+
+            .camera-header {
+                padding: 8px;
+            }
+
+            .camera-header .title {
+                font-size: 12px;
+            }
+
+            .camera-header .home-btn img {
+                width: 28px;
+                height: 28px;
+            }
+
+            .costume-template-content {
+                padding: 12px;
+                max-width: 98%;
+                max-height: 90vh;
+            }
+
+            .costume-template-content h3 {
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+
+            .costume-template-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                margin-bottom: 60px;
+            }
+
+            .costume-template-confirm-btn {
+                width: 48px;
+                height: 48px;
+                bottom: 12px;
+                right: 12px;
+            }
+
+            .costume-template-close-btn {
+                width: 32px;
+                height: 32px;
+                top: 8px;
+                right: 8px;
+            }
+
+            .photo-preview-actions {
+                padding: 16px;
+                gap: 16px;
+            }
+
+            .photo-preview-btn img {
+                width: 45px;
+            }
+        }
+
+        /* 大螢幕 (1400px 以上) */
+        @media (min-width: 1400px) {
+            .camera-controls {
+                padding: 32px;
+                padding-bottom: 16px;
+                gap: 32px;
+                margin-top: -50px;
+            }
+
+            .camera-btn img {
+                width: 100px;
+            }
+
+            .camera-cancel-btn img {
+                width: 120px;
+            }
+
+            .camera-header {
+                padding: 20px;
+            }
+
+            .camera-header .title {
+                font-size: 20px;
+            }
+        }
+
+        /* 超小螢幕 (最大 360px) */
+        @media (max-width: 360px) {
+            .camera-controls {
+                padding: 10px;
+                padding-bottom: 5px;
+                gap: 10px;
+                margin-top: -15px;
+            }
+
+            .camera-btn img {
+                width: 45px;
+            }
+
+            .camera-cancel-btn img {
+                width: 55px;
+            }
+
+            .costume-template-grid {
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 頂部導覽列 -->
+    <div class="camera-header">
+        <div class="title">拍照模式</div>
+    </div>
+
+    <!-- 相機預覽區域 -->
+    <div class="camera-preview-container">
+        <video id="videoPreview" autoplay playsinline></video>
+        
+        <!-- 拍照後的預覽 -->
+        <div class="photo-preview" id="photoPreview">
+            <img id="capturedPhoto" src="" alt="拍攝的照片">
+            <div class="photo-preview-actions">
+                <button class="photo-preview-btn" id="retakeBtn" aria-label="重新拍攝">
+                    <img src="POT/取消.png" alt="重新拍攝">
+                </button>
+                <button class="photo-preview-btn" id="confirmPhotoBtn" aria-label="確認照片">
+                    <img src="POT/確認錄音.png" alt="確認">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 拍照控制按鈕 -->
+    <div class="camera-controls">
+        <button class="camera-btn" id="captureBtn" aria-label="拍照">
+            <img src="POT/拍照.png" alt="拍照">
+        </button>
+        <button class="camera-btn camera-cancel-btn" id="cancelBtn" aria-label="取消">
+            <img src="POT/取消.png" alt="取消">
+        </button>
+    </div>
+
+    <!-- 變裝模板選單 -->
+    <div class="costume-template-modal" id="costumeTemplateModal">
+        <div class="costume-template-content">
+            <!-- 右上角取消按鈕 -->
+            <button class="costume-template-close-btn" id="cancelCostumeBtn" aria-label="取消">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <h3>選擇裝飾模板</h3>
+            <div class="costume-template-grid" id="costumeTemplateGrid">
+                <!-- 模板項目將由 JavaScript 動態生成 -->
+            </div>
+            <!-- 右下角確認按鈕 -->
+            <button class="costume-template-confirm-btn" id="confirmCostumeBtn" aria-label="確認">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 照片框模板數據
+        const COSTUME_TEMPLATES = [
+            { 
+                id: 'frame1', 
+                name: '圓角相框', 
+                image: 'POT/template1.png.png',
+                photoArea: { x: 0.05, y: 0.05, width: 0.9, height: 0.9 }
+            },
+            { 
+                id: 'frame2', 
+                name: '方形相框', 
+                image: 'POT/template2.png.png',
+                photoArea: { x: 0.08, y: 0.08, width: 0.84, height: 0.84 }
+            },
+            { 
+                id: 'frame3', 
+                name: '橢圓相框', 
+                image: 'POT/template3.png.png',
+                photoArea: { x: 0.05, y: 0.08, width: 0.9, height: 0.84 }
+            },
+            { 
+                id: 'frame4', 
+                name: '心形相框', 
+                image: 'POT/template4.png.png',
+                photoArea: { x: 0.08, y: 0.12, width: 0.84, height: 0.76 }
+            },
+            { 
+                id: 'frame5', 
+                name: '星形相框', 
+                image: 'POT/template5.png.png',
+                photoArea: { x: 0.05, y: 0.05, width: 0.9, height: 0.9 }
+            },
+            { 
+                id: 'frame6', 
+                name: '花邊相框', 
+                image: 'POT/template6.png.png',
+                photoArea: { x: 0.06, y: 0.06, width: 0.88, height: 0.88 }
+            }
+        ];
+
+        let mediaStream = null;
+        let capturedPhotoData = null;
+        let selectedTemplateId = null;
+
+        // DOM 元素
+        const videoPreview = document.getElementById('videoPreview');
+        const captureBtn = document.getElementById('captureBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const photoPreview = document.getElementById('photoPreview');
+        const capturedPhoto = document.getElementById('capturedPhoto');
+        const retakeBtn = document.getElementById('retakeBtn');
+        const confirmPhotoBtn = document.getElementById('confirmPhotoBtn');
+        const costumeTemplateModal = document.getElementById('costumeTemplateModal');
+        const costumeTemplateGrid = document.getElementById('costumeTemplateGrid');
+        const confirmCostumeBtn = document.getElementById('confirmCostumeBtn');
+        const cancelCostumeBtn = document.getElementById('cancelCostumeBtn');
+
+        // 獲取所有可用的攝像頭設備
+        async function getCameraDevices() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                return devices.filter(device => device.kind === 'videoinput');
+            } catch (error) {
+                console.error('無法列舉設備:', error);
+                return [];
+            }
+        }
+
+        // 選擇外接攝像頭
+        async function selectExternalCamera() {
+            const devices = await getCameraDevices();
+            
+            if (devices.length === 0) {
+                console.warn('沒有找到攝像頭設備');
+                return null;
+            }
+
+            console.log('找到的攝像頭設備:', devices.map(d => ({ label: d.label, deviceId: d.deviceId })));
+
+            // 優先選擇外接攝像頭（標籤中包含 "external"、"usb"、"外接"、"webcam" 等關鍵字）
+            const externalCamera = devices.find(device => {
+                const label = device.label.toLowerCase();
+                return label.includes('external') || 
+                       label.includes('usb') || 
+                       label.includes('外接') ||
+                       label.includes('webcam') ||
+                       label.includes('logitech') ||
+                       label.includes('c920') ||
+                       label.includes('c270') ||
+                       label.includes('c310');
+            });
+
+            if (externalCamera) {
+                console.log('✅ 找到外接攝像頭:', externalCamera.label);
+                return externalCamera.deviceId;
+            }
+
+            // 如果沒有找到明確標記的外接攝像頭，排除前置攝像頭和內建攝像頭
+            // 優先選擇非內建的攝像頭（通常內建攝像頭標籤包含 "built-in"、"integrated"、"前置"、"後置" 等）
+            const nonBuiltInCamera = devices.find(device => {
+                const label = device.label.toLowerCase();
+                return !label.includes('front') && 
+                       !label.includes('back') &&
+                       !label.includes('rear') &&
+                       !label.includes('facing') &&
+                       !label.includes('前置') &&
+                       !label.includes('後置') &&
+                       !label.includes('user') &&
+                       !label.includes('environment') &&
+                       !label.includes('built-in') &&
+                       !label.includes('integrated') &&
+                       !label.includes('內建');
+            });
+
+            if (nonBuiltInCamera) {
+                console.log('✅ 選擇非內建攝像頭（可能是外接）:', nonBuiltInCamera.label);
+                return nonBuiltInCamera.deviceId;
+            }
+
+            // 如果有多個設備，優先選擇非前置攝像頭
+            if (devices.length > 1) {
+                const nonFrontCamera = devices.find(device => {
+                    const label = device.label.toLowerCase();
+                    return !label.includes('front') && 
+                           !label.includes('前置') &&
+                           !label.includes('user');
+                });
+                
+                if (nonFrontCamera) {
+                    console.log('✅ 選擇非前置攝像頭（可能是外接）:', nonFrontCamera.label);
+                    return nonFrontCamera.deviceId;
+                }
+                
+                // 如果所有設備都是前置，選擇第二個（可能是外接）
+                console.log('⚠️ 所有設備都可能是前置，選擇第二個:', devices[1].label);
+                return devices[1].deviceId;
+            }
+
+            // 如果只有一個設備，使用它
+            if (devices.length === 1) {
+                console.log('⚠️ 只有一個攝像頭設備，使用它:', devices[0].label);
+                return devices[0].deviceId;
+            }
+
+            return null;
+        }
+
+        // 初始化相機
+        async function startCamera() {
+            try {
+                // 首先請求權限以獲取設備標籤
+                await navigator.mediaDevices.getUserMedia({ video: true });
+                
+                // 選擇外接攝像頭
+                const deviceId = await selectExternalCamera();
+                
+                if (deviceId) {
+                    // 使用指定的外接攝像頭
+                    const constraints = { 
+                        video: { 
+                            deviceId: { exact: deviceId },
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 }
+                        } 
+                    };
+                    
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                        mediaStream = stream;
+                        videoPreview.srcObject = stream;
+                        console.log('✅ 相機已啟動，使用外接攝像頭:', deviceId);
+                        return;
+                    } catch (deviceError) {
+                        console.warn('無法使用指定設備，嘗試使用設備ID（非exact）:', deviceError);
+                        // 如果 exact 失敗，嘗試不使用 exact
+                        try {
+                            const fallbackConstraints = { 
+                                video: { 
+                                    deviceId: deviceId,
+                                    width: { ideal: 1920 },
+                                    height: { ideal: 1080 }
+                                } 
+                            };
+                            const stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+                            mediaStream = stream;
+                            videoPreview.srcObject = stream;
+                            console.log('✅ 相機已啟動，使用外接攝像頭（fallback）:', deviceId);
+                            return;
+                        } catch (fallbackError) {
+                            console.error('外接攝像頭啟動失敗:', fallbackError);
+                            // 繼續嘗試其他選項
+                        }
+                    }
+                }
+                
+                // 如果外接攝像頭選擇失敗，嘗試使用後置攝像頭
+                console.log('⚠️ 外接攝像頭不可用，嘗試使用後置攝像頭...');
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                });
+                mediaStream = stream;
+                videoPreview.srcObject = stream;
+                console.log('✅ 已切換到後置攝像頭');
+                
+            } catch (error) {
+                console.error('無法開啟相機:', error);
+                // 最後嘗試：使用任何可用的攝像頭
+                if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError' || error.name === 'NotReadableError') {
+                    try {
+                        console.log('嘗試使用任何可用的攝像頭...');
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            video: true
+                        });
+                        mediaStream = stream;
+                        videoPreview.srcObject = stream;
+                        console.log('✅ 已使用可用的攝像頭');
+                    } catch (finalError) {
+                        console.error('所有攝像頭都無法開啟:', finalError);
+                        alert('無法開啟相機，請檢查：\n\n1. 外接攝像頭已正確連接\n2. 瀏覽器權限設定允許使用攝像頭\n3. 沒有其他應用程式正在使用攝像頭\n\n錯誤: ' + finalError.message);
+                    }
+                } else {
+                    alert('無法開啟相機，請檢查權限設定\n\n錯誤: ' + error.message);
+                }
+            }
+        }
+
+        // 停止相機
+        function stopCamera() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+            videoPreview.srcObject = null;
+        }
+
+        // 拍照
+        function capturePhoto() {
+            const video = videoPreview;
+            if (!video || !video.videoWidth || !video.videoHeight) return;
+            
+            const canvasTemp = document.createElement('canvas');
+            canvasTemp.width = video.videoWidth;
+            canvasTemp.height = video.videoHeight;
+            const ctx = canvasTemp.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            capturedPhotoData = canvasTemp.toDataURL('image/png');
+            
+            // 停止相機
+            stopCamera();
+            
+            // 直接跳轉到編輯頁面（不選擇模板，在編輯頁面選擇）
+            confirmPhoto();
+        }
+
+        // 重新拍攝
+        function retakePhoto() {
+            photoPreview.classList.remove('active');
+            capturedPhotoData = null;
+            startCamera();
+        }
+
+        // 確認照片，跳轉到編輯頁面
+        function confirmPhoto() {
+            if (!capturedPhotoData) return;
+            
+            // 檢查 localStorage 是否可用
+            if (!isLocalStorageAvailable()) {
+                alert('⚠️ 瀏覽器追蹤預防功能阻止了數據存儲！\n\n請按照以下步驟解決：\n\n1. 點擊瀏覽器地址欄左側的鎖定圖標\n2. 選擇「網站設定」或「Cookie 和網站權限」\n3. 允許「Cookie 和網站數據」\n4. 關閉「追蹤預防」功能\n5. 刷新頁面後重新拍照\n\n或使用其他瀏覽器（如 Chrome）試試。');
+                return;
+            }
+
+            // 將照片數據保存到 localStorage，然後跳轉到編輯頁面（不帶模板）
+            try {
+                const dataToPass = {
+                    photo: capturedPhotoData,
+                    timestamp: Date.now()
+                };
+                
+                localStorage.setItem('cameraData', JSON.stringify(dataToPass));
+                
+                // 驗證數據是否成功保存
+                const verifyData = localStorage.getItem('cameraData');
+                if (!verifyData) {
+                    throw new Error('數據保存後無法讀取，可能被瀏覽器阻止');
+                }
+                
+                // 跳轉到編輯頁面
+                window.location.href = 'editor.html?fromCamera=1';
+            } catch (e) {
+                console.error('保存數據失敗:', e);
+                alert('⚠️ 保存照片數據失敗！\n\n錯誤：' + e.message + '\n\n請檢查瀏覽器設定：\n1. 允許 Cookie 和網站數據\n2. 關閉追蹤預防功能\n3. 確保使用本地服務器運行（不要直接打開 HTML 文件）\n4. 重新拍照');
+            }
+        }
+
+        // 顯示變裝模板選單
+        function showCostumeTemplateModal() {
+            // 清空並生成模板選項
+            costumeTemplateGrid.innerHTML = '';
+            COSTUME_TEMPLATES.forEach((template, index) => {
+                const item = document.createElement('div');
+                item.className = 'costume-template-item';
+                item.dataset.templateId = template.id;
+                item.innerHTML = `<img src="${template.image}" alt="${template.name}" onerror="console.error('模板圖片載入失敗:', '${template.image}'); this.style.display='none'; this.parentElement.innerHTML='<div style=\\'padding:20px;text-align:center;color:#999;\\'>${template.name}</div>'">`;
+                
+                // 第一個模板預設選中
+                if (index === 0) {
+                    item.classList.add('active');
+                    selectedTemplateId = template.id;
+                }
+                
+                item.addEventListener('click', () => {
+                    // 移除所有 active 狀態
+                    document.querySelectorAll('.costume-template-item').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    // 添加當前選中的 active 狀態
+                    item.classList.add('active');
+                    selectedTemplateId = template.id;
+                });
+                
+                costumeTemplateGrid.appendChild(item);
+            });
+            
+            costumeTemplateModal.classList.add('active');
+        }
+
+        // 檢查 localStorage 是否可用
+        function isLocalStorageAvailable() {
+            try {
+                const test = '__localStorage_test__';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return true;
+            } catch (e) {
+                console.warn('localStorage 不可用:', e);
+                return false;
+            }
+        }
+
+        // 確認模板，跳轉到編輯頁面
+        function confirmTemplate() {
+            if (!capturedPhotoData || !selectedTemplateId) {
+                alert('請選擇一張照片和一個模板');
+                return;
+            }
+
+            // 檢查 localStorage 是否可用
+            if (!isLocalStorageAvailable()) {
+                alert('瀏覽器的隱私設定阻止了存儲訪問。\n\n請在瀏覽器設定中：\n1. 允許此網站的 Cookie 和網站數據\n2. 關閉追蹤預防功能（如果啟用）\n3. 或使用隱私模式以外的模式\n\n然後重新嘗試。');
+                return;
+            }
+
+            // 將照片和模板數據保存到 localStorage，然後跳轉到編輯頁面
+            try {
+                const dataToPass = {
+                    photo: capturedPhotoData,
+                    templateId: selectedTemplateId,
+                    timestamp: Date.now()
+                };
+                
+                localStorage.setItem('cameraData', JSON.stringify(dataToPass));
+                
+                // 跳轉到編輯頁面
+                window.location.href = 'editor.html?fromCamera=1';
+            } catch (e) {
+                console.error('保存數據失敗:', e);
+                alert('保存照片數據失敗，請檢查瀏覽器設定後重試');
+            }
+        }
+
+        // 取消模板選擇，返回拍照
+        function cancelTemplate() {
+            costumeTemplateModal.classList.remove('active');
+            retakePhoto();
+        }
+
+        // 返回主頁
+        function goHome() {
+            stopCamera();
+            window.location.href = 'index.html';
+        }
+
+        // 事件監聽
+        captureBtn.addEventListener('click', capturePhoto);
+        retakeBtn.addEventListener('click', retakePhoto);
+        confirmPhotoBtn.addEventListener('click', confirmPhoto);
+        confirmCostumeBtn.addEventListener('click', confirmTemplate);
+        cancelCostumeBtn.addEventListener('click', cancelTemplate);
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', goHome);
+        }
+
+        // 頁面載入時啟動相機
+        window.addEventListener('DOMContentLoaded', () => {
+            startCamera();
+        });
+
+        // 頁面卸載時停止相機
+        window.addEventListener('beforeunload', () => {
+            stopCamera();
+        });
+    </script>
+</body>
+</html>
+

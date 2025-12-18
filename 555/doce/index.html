@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>創意畫布</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 導覽列 -->
+        <nav class="navbar">
+            <div class="navbar-left">
+                <div class="navbar-logo"></div>
+                <span class="navbar-gratitude-text">小手紙，大感恩</span>
+            </div>
+            <button class="parent-mode-btn" id="parentModeBtn">
+                <img src="pot/家長模式.png" alt="家長模式" class="parent-mode-btn-img">
+            </button>
+        </nav>
+        
+        <!-- 頂部區域 -->
+        <div class="top-section">
+            <div class="upload-block">
+                <div class="button-guide-top" aria-hidden="true">
+                    <span class="guide-arrow-down"></span>
+                </div>
+                <div class="upload-inline">
+                    <!-- 中間大圓圈 -->
+                    <button class="main-circle" id="mainCircle" type="button">
+                        <img src="pot/主頁按鈕.png" alt="按鈕">
+                        <input type="file" id="mainCircleFileInput" accept="image/*" style="display: none;">
+                    </button>
+                </div>
+            </div>
+            <div class="hero-message">
+                <img src="pot/主頁標語.png" alt="主頁標語" style="max-width: 60%; height: auto; display: block; margin: 0 auto;">
+            </div>
+
+            <!-- 照片區按鈕（連到 photos.html） -->
+            <div class="photo-fab-wrapper">
+                <a href="photos.html" class="photo-fab" aria-label="照片區">
+                    <img src="pot/照片區.png" alt="照片區">
+                </a>
+            </div>
+            <div class="photo-fab-guide" aria-hidden="true">
+                <img src="pot/照片區文字.png" alt="照片區引導" class="photo-fab-text-img">
+                <span class="photo-fab-arrow"></span>
+            </div>
+        </div>
+
+        <!-- 左下角吉祥物 -->
+        <div class="mascot-container" aria-hidden="true">
+            <img src="pot/吉祥物.png" alt="吉祥物" class="mascot-img">
+        </div>
+
+    </div>
+
+    <!-- 照片詳情模態框 -->
+    <div class="photo-detail-modal" id="photoDetailModal">
+        <div class="photo-detail-content">
+            <button class="photo-detail-close" id="closePhotoDetail">×</button>
+            <div class="photo-detail-image-container">
+                <img id="photoDetailImage" src="" alt="照片">
+            </div>
+            <div class="photo-detail-audio-container" id="photoDetailAudioContainer" style="display: none;">
+                <audio id="photoDetailAudio" controls style="width: 100%; margin-top: 16px;"></audio>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .photo-detail-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .photo-detail-modal.active {
+            display: flex;
+        }
+
+        .photo-detail-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .photo-detail-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            z-index: 10;
+        }
+
+        .photo-detail-close:hover {
+            background: white;
+        }
+
+        .photo-detail-image-container {
+            max-width: 100%;
+            max-height: 70vh;
+            overflow: hidden;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: zoom-in;
+        }
+
+        .photo-detail-image-container img {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            display: block;
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+        }
+
+        .photo-detail-image-container:hover img {
+            transform: scale(1.5);
+            cursor: zoom-out;
+        }
+
+        .photo-detail-audio-container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+        }
+    </style>
+
+    <script>
+        // 點擊中間大圓圈直接跳轉到編輯頁面（移除功能說明 Modal）
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainCircle = document.getElementById('mainCircle');
+            if (mainCircle) {
+                mainCircle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = 'editor.html';
+                });
+            }
+            
+            // 家長模式按鈕點擊事件
+            const parentModeBtn = document.getElementById('parentModeBtn');
+            if (parentModeBtn) {
+                parentModeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // 這裡可以添加家長模式的功能
+                });
+            }
+        });
+    </script>
+
+    <script>
+        // 原有的其他功能保持不變
+        
+        // 載入並顯示保存的照片
+        function loadSavedPhotos() {
+            let savedPhotos = [];
+            try {
+                savedPhotos = JSON.parse(localStorage.getItem('savedPhotos') || '[]');
+            } catch (e) {
+                console.warn('無法讀取 localStorage:', e);
+                savedPhotos = [];
+            }
+            const cards = document.querySelectorAll('.card');
+            
+            // 按時間戳倒序排列（最新的在前）
+            savedPhotos.sort((a, b) => b.id - a.id);
+            
+            // 將照片顯示在卡片中
+            savedPhotos.forEach((photo, index) => {
+                if (index < cards.length) {
+                    const card = cards[index];
+                    // 清空卡片內容
+                    card.innerHTML = '';
+                    // 創建圖片元素
+                    const img = document.createElement('img');
+                    img.src = photo.image;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '8px';
+                    img.style.display = 'block';
+                    card.style.cursor = 'pointer';
+                    
+                    // 添加點擊事件，顯示完整照片和錄音
+                    card.addEventListener('click', () => {
+                        showPhotoDetail(photo);
+                    });
+                    
+                    card.appendChild(img);
+                }
+            });
+        }
+
+        // 顯示照片詳情（包含完整照片和錄音）
+        function showPhotoDetail(photo) {
+            const modal = document.getElementById('photoDetailModal');
+            const imageContainer = document.getElementById('photoDetailImage');
+            const audioContainer = document.getElementById('photoDetailAudioContainer');
+            const audioElement = document.getElementById('photoDetailAudio');
+            
+            // 顯示照片
+            imageContainer.src = photo.image;
+            
+            // 如果有錄音，顯示錄音播放器
+            if (photo.audio) {
+                audioContainer.style.display = 'block';
+                audioElement.src = photo.audio;
+            } else {
+                audioContainer.style.display = 'none';
+            }
+            
+            // 顯示模態框
+            modal.classList.add('active');
+        }
+
+        // 關閉照片詳情
+        document.getElementById('closePhotoDetail').addEventListener('click', () => {
+            const modal = document.getElementById('photoDetailModal');
+            const audioElement = document.getElementById('photoDetailAudio');
+            modal.classList.remove('active');
+            // 停止播放錄音
+            audioElement.pause();
+            audioElement.src = '';
+        });
+
+        // 點擊背景關閉模態框
+        document.getElementById('photoDetailModal').addEventListener('click', (e) => {
+            if (e.target.id === 'photoDetailModal') {
+                const modal = document.getElementById('photoDetailModal');
+                const audioElement = document.getElementById('photoDetailAudio');
+                modal.classList.remove('active');
+                // 停止播放錄音
+                audioElement.pause();
+                audioElement.src = '';
+            }
+        });
+        
+        // 頁面載入時顯示照片
+        window.addEventListener('DOMContentLoaded', loadSavedPhotos);
+    </script>
+
+    <script src="script.js"></script>
+</body>
+</html>

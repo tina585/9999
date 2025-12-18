@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片區</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .photos-container {
+            max-width: 1100px;
+            margin: 100px auto 60px;
+            padding: 0 20px;
+        }
+        .photos-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        .photos-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #333;
+        }
+        .back-link {
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 12px;
+            background: #FEAC3C;
+            color: #fff;
+            font-weight: 700;
+        }
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+        .photo-card {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.16);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            aspect-ratio: 4 / 3;
+            display: flex;
+        }
+        .photo-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .photo-card.add-card {
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed #f5a623;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+        .photo-card.add-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 18px rgba(0,0,0,0.18);
+        }
+        .photo-card.add-card svg {
+            width: 48px;
+            height: 48px;
+            color: #f5a623;
+        }
+        /* 照片詳情模態框 */
+        .photo-detail-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .photo-detail-modal.active {
+            display: flex;
+        }
+        .photo-detail-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .photo-detail-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            z-index: 10;
+        }
+        .photo-detail-image-container {
+            max-width: 100%;
+            max-height: 70vh;
+            overflow: hidden;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .photo-detail-image-container img {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            display: block;
+            border-radius: 12px;
+        }
+        .photo-detail-audio-container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        /* 頂部照片橫幅 */
+        .photo-banner {
+            margin-top: -40px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            position: relative;
+        }
+        .photo-banner img:not(.photo-banner-custom) {
+            max-width: 70%;
+            height: auto;
+            display: inline-block;
+            transform: translateX(-90px); /* 往右側再移一些 */
+        }
+        /* 標語旁邊的自訂照片 */
+        .photo-banner-custom {
+            width: 350px;
+            height: 350px;
+          
+            object-fit: contain; /* 改為 contain 確保照片完整顯示不被裁切 */
+            border-radius: 0;
+            box-shadow: none;
+            background: transparent;
+            display: inline-block;
+            position: relative;
+            z-index: 1;
+            margin-right: 0;
+            margin-left: 50px; /* 往右移 */
+            margin-top: 250px; /* 往下移一點 */
+            animation: gentleFloat 3s ease-in-out infinite; /* 輕微上下晃動動畫 */
+        }
+        
+        /* 輕微上下晃動動畫 - 只應用在吉祥物上 */
+        @keyframes gentleFloat {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        /* 響應式設計：適配不同螢幕尺寸 */
+        /* 平板和中等螢幕 (769px - 1024px) */
+        @media (max-width: 1024px) {
+            .photos-container {
+                max-width: 100%;
+                padding: 0 16px;
+                margin-top: 80px;
+            }
+
+            .photo-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px;
+            }
+
+            .photo-banner-custom {
+                width: 250px;
+                height: 250px;
+                margin-top: 200px;
+            }
+        }
+
+        /* 平板 (601px - 900px) */
+        @media (max-width: 900px) {
+            .photo-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 14px;
+            }
+
+            .photos-container {
+                margin-top: 70px;
+            }
+
+            .photos-title {
+                font-size: 20px;
+            }
+
+            .back-link {
+                padding: 8px 14px;
+                font-size: 14px;
+            }
+        }
+
+        /* 手機橫向和小平板 (481px - 768px) */
+        @media (max-width: 768px) {
+            .photos-container {
+                margin-top: 60px;
+                margin-bottom: 40px;
+                padding: 0 12px;
+            }
+
+            .photo-banner {
+                flex-direction: column;
+                gap: 15px;
+                margin-top: -30px;
+            }
+
+            .photo-banner-custom {
+                width: 150px;
+                height: 150px;
+                margin-top: 0;
+                margin-left: 0;
+            }
+
+            .photo-banner img:not(.photo-banner-custom) {
+                max-width: 80%;
+                transform: none;
+            }
+
+            .photo-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .photos-header {
+                margin-bottom: 16px;
+            }
+
+            .photos-title {
+                font-size: 18px;
+            }
+
+            .back-link {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+
+            .photo-detail-content {
+                max-width: 95%;
+                padding: 10px;
+            }
+
+            .photo-detail-close {
+                top: -35px;
+                width: 35px;
+                height: 35px;
+                font-size: 20px;
+            }
+
+            .photo-detail-image-container {
+                padding: 12px;
+            }
+
+            .photo-detail-audio-container {
+                padding: 12px;
+            }
+        }
+
+        /* 手機直向 (最大 600px) */
+        @media (max-width: 600px) {
+            .photo-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .photos-container {
+                margin-top: 50px;
+                padding: 0 10px;
+            }
+
+            .photos-title {
+                font-size: 16px;
+            }
+
+            .back-link {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .photo-banner-custom {
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        /* 超小螢幕 (最大 480px) */
+        @media (max-width: 480px) {
+            .photos-container {
+                margin-top: 40px;
+                margin-bottom: 30px;
+                padding: 0 8px;
+            }
+
+            .photo-grid {
+                gap: 10px;
+            }
+
+            .photos-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                margin-bottom: 12px;
+            }
+
+            .photos-title {
+                font-size: 14px;
+            }
+
+            .back-link {
+                padding: 6px 10px;
+                font-size: 11px;
+                width: 100%;
+                text-align: center;
+            }
+
+            .photo-banner {
+                margin-top: -20px;
+                margin-bottom: 15px;
+            }
+
+            .photo-banner-custom {
+                width: 100px;
+                height: 100px;
+            }
+
+            .photo-banner img:not(.photo-banner-custom) {
+                max-width: 90%;
+            }
+
+            .photo-detail-content {
+                max-width: 98%;
+                padding: 8px;
+            }
+
+            .photo-detail-close {
+                top: -30px;
+                width: 30px;
+                height: 30px;
+                font-size: 18px;
+            }
+
+            .photo-detail-image-container {
+                padding: 8px;
+            }
+
+            .photo-detail-audio-container {
+                padding: 8px;
+            }
+        }
+
+        /* 大螢幕 (1400px 以上) */
+        @media (min-width: 1400px) {
+            .photos-container {
+                max-width: 1200px;
+            }
+
+            .photo-grid {
+                gap: 24px;
+            }
+
+            .photo-banner-custom {
+                width: 400px;
+                height: 400px;
+                margin-top: 300px;
+            }
+        }
+
+        /* 超小螢幕 (最大 360px) */
+        @media (max-width: 360px) {
+            .photo-grid {
+                gap: 8px;
+            }
+
+            .photos-title {
+                font-size: 12px;
+            }
+
+            .back-link {
+                font-size: 10px;
+                padding: 5px 8px;
+            }
+        }
+        /* 成功上傳提示視窗 */
+        .upload-success-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .upload-success-modal.active {
+            display: flex;
+        }
+        .upload-success-content {
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            text-align: center;
+            box-shadow: none;
+            animation: slideUp 0.4s ease;
+            max-width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+        .upload-success-img {
+            max-width: 540px;
+            height: auto;
+            display: block;
+            margin: 0 auto 20px;
+            animation: gentleShake 3s ease-in-out infinite;
+        }
+        @keyframes gentleShake {
+            0%, 100% {
+                transform: translateX(0) translateY(0) rotate(0deg);
+            }
+            25% {
+                transform: translateX(-2px) translateY(1px) rotate(-0.5deg);
+            }
+            50% {
+                transform: translateX(2px) translateY(-1px) rotate(0.5deg);
+            }
+            75% {
+                transform: translateX(-1px) translateY(1px) rotate(-0.3deg);
+            }
+        }
+        .upload-success-close {
+            background: #FEAC3C;
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-left: -150px;
+        }
+        .upload-success-close:hover {
+            background: #f5a623;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        /* HOME按鈕圖片樣式 */
+        .home-logo img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- 導覽列（與主頁一致） -->
+    <nav class="navbar">
+        <a class="navbar-logo home-logo" href="index.html" aria-label="回主頁">
+            <img src="POT/HOME.png" alt="HOME">
+        </a>
+        <button class="parent-mode-btn" id="parentModeBtn">
+            <img src="pot/家長模式.png" alt="家長模式" class="parent-mode-btn-img">
+        </button>
+    </nav>
+
+    <div class="photos-container">
+        <div class="photo-banner">
+            <img src="pot/照片區吉祥物.png" alt="自訂照片" class="photo-banner-custom" id="customPhoto">
+            <img src="pot/照片區標語.png" alt="照片區標語">
+        </div>
+        <div class="photo-grid" id="photoGrid"></div>
+    </div>
+
+    <!-- 照片詳情模態框 -->
+    <div class="photo-detail-modal" id="photoDetailModal">
+        <div class="photo-detail-content">
+            <button class="photo-detail-close" id="closePhotoDetail">×</button>
+            <div class="photo-detail-image-container">
+                <img id="photoDetailImage" src="" alt="照片">
+            </div>
+            <div class="photo-detail-audio-container" id="photoDetailAudioContainer" style="display: none;">
+                <audio id="photoDetailAudio" controls style="width: 100%; margin-top: 16px;"></audio>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功上傳提示視窗 -->
+    <div class="upload-success-modal" id="uploadSuccessModal">
+        <div class="upload-success-content">
+            <img src="pot/上傳成功.png" alt="上傳成功" class="upload-success-img">
+            <button class="upload-success-close" id="closeUploadSuccess">確定</button>
+        </div>
+    </div>
+
+    <script>
+        const addPhotoInput = document.getElementById('addPhotoInput');
+
+        // 載入並顯示保存的照片，最後一格為新增按鈕
+        function loadSavedPhotos() {
+            let savedPhotos = [];
+            try {
+                const savedData = localStorage.getItem('savedPhotos');
+                console.log('讀取 localStorage savedPhotos:', savedData ? '有數據' : '無數據');
+                
+                if (savedData) {
+                    savedPhotos = JSON.parse(savedData);
+                    console.log('成功解析照片數據，數量:', savedPhotos.length);
+                } else {
+                    console.log('localStorage 中沒有 savedPhotos 數據');
+                }
+            } catch (e) {
+                console.error('無法讀取 localStorage:', e);
+                console.error('錯誤詳情:', e.name, e.message);
+                savedPhotos = [];
+            }
+            
+            const grid = document.getElementById('photoGrid');
+            if (!grid) {
+                console.error('找不到 photoGrid 元素');
+                return;
+            }
+            grid.innerHTML = '';
+
+            if (!savedPhotos.length) {
+                grid.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; color:#777;">尚未有照片，回主頁拍一張吧！</div>';
+                console.log('沒有照片可顯示');
+            } else {
+                console.log('開始顯示照片，總數:', savedPhotos.length);
+                // 按照時間戳倒序排列（最新的在前）
+                savedPhotos.sort((a, b) => {
+                    const timeA = a.timestamp ? new Date(a.timestamp).getTime() : (a.id || 0);
+                    const timeB = b.timestamp ? new Date(b.timestamp).getTime() : (b.id || 0);
+                    return timeB - timeA;
+                });
+                
+                savedPhotos.forEach((photo, index) => {
+                    try {
+                        const card = document.createElement('div');
+                        card.className = 'photo-card';
+                        const img = document.createElement('img');
+                        
+                        // 驗證照片數據
+                        if (!photo.image || photo.image === 'data:,') {
+                            console.warn('照片', index, '的數據無效，跳過');
+                            return;
+                        }
+                        
+                        img.src = photo.image;
+                        img.alt = '照片';
+                        img.onerror = () => {
+                            console.error('照片', index, '載入失敗');
+                            card.style.background = '#f0f0f0';
+                            card.innerHTML = '<div style="padding:20px;text-align:center;color:#999;">照片載入失敗</div>';
+                        };
+                        
+                        card.appendChild(img);
+                        card.addEventListener('click', () => showPhotoDetail(photo));
+                        grid.appendChild(card);
+                        console.log('已添加照片', index + 1);
+                    } catch (e) {
+                        console.error('處理照片', index, '時發生錯誤:', e);
+                    }
+                });
+            }
+
+            // 新增按鈕卡片
+            const addCard = document.createElement('div');
+            addCard.className = 'photo-card add-card';
+            addCard.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            `;
+            addCard.addEventListener('click', () => {
+                // 點擊加號卡片前往拍照模式
+                window.location.href = 'camera.html';
+            });
+            grid.appendChild(addCard);
+            console.log('照片列表載入完成');
+        }
+
+        function showPhotoDetail(photo) {
+            const modal = document.getElementById('photoDetailModal');
+            const imageEl = document.getElementById('photoDetailImage');
+            const audioContainer = document.getElementById('photoDetailAudioContainer');
+            const audioEl = document.getElementById('photoDetailAudio');
+
+            imageEl.src = photo.image;
+            if (photo.audio) {
+                audioContainer.style.display = 'block';
+                audioEl.src = photo.audio;
+            } else {
+                audioContainer.style.display = 'none';
+                audioEl.src = '';
+            }
+            modal.classList.add('active');
+        }
+
+        document.getElementById('closePhotoDetail').addEventListener('click', () => {
+            const modal = document.getElementById('photoDetailModal');
+            const audioEl = document.getElementById('photoDetailAudio');
+            modal.classList.remove('active');
+            audioEl.pause();
+            audioEl.src = '';
+        });
+
+        document.getElementById('photoDetailModal').addEventListener('click', (e) => {
+            if (e.target.id === 'photoDetailModal') {
+                const modal = document.getElementById('photoDetailModal');
+                const audioEl = document.getElementById('photoDetailAudio');
+                modal.classList.remove('active');
+                audioEl.pause();
+                audioEl.src = '';
+            }
+        });
+
+        // 家長模式按鈕點擊事件
+        const parentModeBtn = document.getElementById('parentModeBtn');
+        if (parentModeBtn) {
+            parentModeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                // 這裡可以添加家長模式的功能
+            });
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            // 先載入照片列表
+            loadSavedPhotos();
+            
+            // 檢查 URL 參數，如果上傳成功則顯示提示視窗
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('upload') === 'success') {
+                // 重新載入照片列表，確保顯示最新上傳的照片
+                loadSavedPhotos();
+                
+                const successModal = document.getElementById('uploadSuccessModal');
+                if (successModal) {
+                    successModal.classList.add('active');
+                    
+                    // 6秒後自動關閉
+                    setTimeout(() => {
+                        successModal.classList.remove('active');
+                        // 移除 URL 參數
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }, 6000);
+                }
+            }
+        });
+        
+        // 監聽頁面可見性變化，當頁面重新可見時重新載入照片
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                loadSavedPhotos();
+            }
+        });
+        
+        // 監聽頁面焦點，當頁面重新獲得焦點時重新載入照片
+        window.addEventListener('focus', () => {
+            loadSavedPhotos();
+        });
+        
+        // 關閉成功提示視窗
+        const closeUploadSuccessBtn = document.getElementById('closeUploadSuccess');
+        if (closeUploadSuccessBtn) {
+            closeUploadSuccessBtn.addEventListener('click', () => {
+                const successModal = document.getElementById('uploadSuccessModal');
+                if (successModal) {
+                    successModal.classList.remove('active');
+                    // 移除 URL 參數
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    // 重新載入照片列表
+                    loadSavedPhotos();
+                }
+            });
+        }
+        
+        // 新增照片（目前改為跳轉編輯頁，保留程式供日後需要時使用）
+        if (addPhotoInput) {
+            addPhotoInput.addEventListener('change', handleAddPhoto);
+        }
+
+        function handleAddPhoto(e) {
+            const file = e.target.files && e.target.files[0];
+            if (!file || !file.type.startsWith('image/')) {
+                e.target.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                saveNewPhoto(reader.result);
+                e.target.value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveNewPhoto(imageData) {
+            try {
+                let savedPhotos = [];
+                try {
+                    savedPhotos = JSON.parse(localStorage.getItem('savedPhotos') || '[]');
+                } catch (e) {
+                    console.warn('無法讀取 localStorage:', e);
+                    savedPhotos = [];
+                }
+                savedPhotos.unshift({
+                    id: Date.now(),
+                    image: imageData,
+                    audio: null,
+                    timestamp: new Date().toISOString()
+                });
+                // 只保留最新 12 張，避免無限膨脹
+                if (savedPhotos.length > 12) {
+                    savedPhotos = savedPhotos.slice(0, 12);
+                }
+                try {
+                    localStorage.setItem('savedPhotos', JSON.stringify(savedPhotos));
+                } catch (e) {
+                    console.error('無法保存到 localStorage:', e);
+                    alert('無法保存照片，請檢查瀏覽器的隱私設定，允許網站使用本地存儲。');
+                    return;
+                }
+                loadSavedPhotos();
+            } catch (error) {
+                console.error('保存照片時發生錯誤:', error);
+                alert('保存照片時發生錯誤，請重試。');
+            }
+        }
+    </script>
+
+    <!-- 隱藏檔案選擇 -->
+    <input type="file" id="addPhotoInput" accept="image/*" style="display:none">
+</body>
+</html>
+
+
