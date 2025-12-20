@@ -99,8 +99,8 @@
         .edit-guide-thumb {
             position: absolute;
             top: 55%;
-            left: -340px;
-            width: 350px;
+            left: -240px;
+            width: 240px;
             height: auto;
             display: block;
             pointer-events: none;
@@ -200,14 +200,14 @@
         /* 響應式設計：在不同屏幕尺寸下調整確認按鈕位置 */
         @media (min-width: 1400px) {
             .editor-confirm-btn {
-                right: 250px;
+                right: 280px;
                 transform: none;
             }
         }
         
         @media (max-width: 1399px) {
             .editor-confirm-btn {
-                right: 20px;
+                right: 30px;
                 transform: none;
             }
         }
@@ -1738,46 +1738,10 @@
             { id: 'sticker6', name: '紅色心形眼鏡', image: 'POT/sticker6.png' }
         ];
 
-        // 模板數據
-        const TEMPLATES = [
-            { 
-                id: 'frame1', 
-                name: '圓角相框', 
-                image: 'POT/template1.png.png',
-                photoArea: { x: 0.05, y: 0.05, width: 0.9, height: 0.9 }
-            },
-            { 
-                id: 'frame2', 
-                name: '方形相框', 
-                image: 'POT/template2.png.png',
-                photoArea: { x: 0.08, y: 0.08, width: 0.84, height: 0.84 }
-            },
-            { 
-                id: 'frame3', 
-                name: '橢圓相框', 
-                image: 'POT/template3.png.png',
-                photoArea: { x: 0.05, y: 0.08, width: 0.9, height: 0.84 }
-            },
-            { 
-                id: 'frame4', 
-                name: '心形相框', 
-                image: 'POT/template4.png.png',
-                photoArea: { x: 0.08, y: 0.12, width: 0.84, height: 0.76 }
-            },
-            { 
-                id: 'frame5', 
-                name: '星形相框', 
-                image: 'POT/template5.png.png',
-                photoArea: { x: 0.05, y: 0.05, width: 0.9, height: 0.9 }
-            },
-            { 
-                id: 'frame6', 
-                name: '花邊相框', 
-                image: 'POT/template6.png.png',
-                photoArea: { x: 0.06, y: 0.06, width: 0.88, height: 0.88 }
-            }
-        ];
+        // 模板數據（目前未使用，保留空數組以備將來使用）
+        const TEMPLATES = [];
 
+       
         let selectedTemplateId = null; // 當前選中的模板ID
 
         // 初始化
@@ -2273,6 +2237,11 @@
             confirmBtn.disabled = true;
 
             grid.innerHTML = '';
+            // 目前沒有模板，顯示提示訊息
+            if (TEMPLATES.length === 0) {
+                grid.innerHTML = '<div style="padding: 40px; text-align: center; color: #999;">暫無可用模板</div>';
+                return;
+            }
             TEMPLATES.forEach((template) => {
                 const item = document.createElement('div');
                 item.className = 'template-selection-item';

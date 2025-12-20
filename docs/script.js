@@ -46,33 +46,35 @@ let recordingTimer = null;
 let recordingTime = 0;
 
 // 上傳照片功能
-uploadArea.addEventListener('click', () => {
-    fileInput.click();
-});
+if (uploadArea && fileInput) {
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
 
-uploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadArea.classList.add('dragover');
-});
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
 
-uploadArea.addEventListener('dragleave', () => {
-    uploadArea.classList.remove('dragover');
-});
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
 
-uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.classList.remove('dragover');
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-        handleFile(files[0]);
-    }
-});
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+    });
 
-fileInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-        handleFile(e.target.files[0]);
-    }
-});
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
+        }
+    });
+}
 
 function handleFile(file) {
     if (!file.type.startsWith('image/')) {
@@ -97,9 +99,11 @@ function handleFile(file) {
 }
 
 // 繪畫功能
-brushSize.addEventListener('input', (e) => {
-    brushSizeValue.textContent = e.target.value;
-});
+if (brushSize && brushSizeValue) {
+    brushSize.addEventListener('input', (e) => {
+        brushSizeValue.textContent = e.target.value;
+    });
+}
 
 if (penTool) {
     penTool.addEventListener('click', () => {
@@ -132,37 +136,39 @@ function updateToolButtons() {
     if (currentTool === 'signature') signatureTool.classList.add('active');
 }
 
-photoCanvas.addEventListener('mousedown', startDrawing);
-photoCanvas.addEventListener('mousemove', draw);
-photoCanvas.addEventListener('mouseup', stopDrawing);
-photoCanvas.addEventListener('mouseout', stopDrawing);
+if (photoCanvas) {
+    photoCanvas.addEventListener('mousedown', startDrawing);
+    photoCanvas.addEventListener('mousemove', draw);
+    photoCanvas.addEventListener('mouseup', stopDrawing);
+    photoCanvas.addEventListener('mouseout', stopDrawing);
 
-// 觸控支援
-photoCanvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    const mouseEvent = new MouseEvent('mousedown', {
-        clientX: touch.clientX,
-        clientY: touch.clientY
+    // 觸控支援
+    photoCanvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousedown', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        photoCanvas.dispatchEvent(mouseEvent);
     });
-    photoCanvas.dispatchEvent(mouseEvent);
-});
 
-photoCanvas.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    const mouseEvent = new MouseEvent('mousemove', {
-        clientX: touch.clientX,
-        clientY: touch.clientY
+    photoCanvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousemove', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        photoCanvas.dispatchEvent(mouseEvent);
     });
-    photoCanvas.dispatchEvent(mouseEvent);
-});
 
-photoCanvas.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    const mouseEvent = new MouseEvent('mouseup', {});
-    photoCanvas.dispatchEvent(mouseEvent);
-});
+    photoCanvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        const mouseEvent = new MouseEvent('mouseup', {});
+        photoCanvas.dispatchEvent(mouseEvent);
+    });
+}
 
 function startDrawing(e) {
     if (currentTool === 'pen' || currentTool === 'signature') {
@@ -177,6 +183,7 @@ function startDrawing(e) {
 
 function draw(e) {
     if (!isDrawing) return;
+    if (!photoCanvas || !ctx || !brushSize || !colorPicker) return;
     const rect = photoCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -197,92 +204,103 @@ function stopDrawing() {
 }
 
 // 照片編輯功能
-flipHorizontal.addEventListener('click', () => {
-    if (!currentImage) return;
-    ctx.save();
-    ctx.scale(-1, 1);
-    ctx.drawImage(photoCanvas, -photoCanvas.width, 0);
-    ctx.restore();
-    const imageData = ctx.getImageData(0, 0, photoCanvas.width, photoCanvas.height);
-    ctx.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
-    ctx.putImageData(imageData, 0, 0);
-});
+if (flipHorizontal) {
+    flipHorizontal.addEventListener('click', () => {
+        if (!currentImage) return;
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.drawImage(photoCanvas, -photoCanvas.width, 0);
+        ctx.restore();
+        const imageData = ctx.getImageData(0, 0, photoCanvas.width, photoCanvas.height);
+        ctx.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
+        ctx.putImageData(imageData, 0, 0);
+    });
+}
 
-flipVertical.addEventListener('click', () => {
-    if (!currentImage) return;
-    ctx.save();
-    ctx.scale(1, -1);
-    ctx.drawImage(photoCanvas, 0, -photoCanvas.height);
-    ctx.restore();
-    const imageData = ctx.getImageData(0, 0, photoCanvas.width, photoCanvas.height);
-    ctx.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
-    ctx.putImageData(imageData, 0, 0);
-});
+if (flipVertical) {
+    flipVertical.addEventListener('click', () => {
+        if (!currentImage) return;
+        ctx.save();
+        ctx.scale(1, -1);
+        ctx.drawImage(photoCanvas, 0, -photoCanvas.height);
+        ctx.restore();
+        const imageData = ctx.getImageData(0, 0, photoCanvas.width, photoCanvas.height);
+        ctx.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
+        ctx.putImageData(imageData, 0, 0);
+    });
+}
 
-rotateBtn.addEventListener('click', () => {
-    if (!currentImage) return;
-    currentRotation = (currentRotation + 90) % 360;
-    const imageData = ctx.getImageData(0, 0, photoCanvas.width, photoCanvas.height);
-    ctx.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
-    
-    ctx.save();
-    ctx.translate(photoCanvas.width / 2, photoCanvas.height / 2);
-    ctx.rotate((currentRotation * Math.PI) / 180);
-    ctx.drawImage(photoCanvas, -photoCanvas.width / 2, -photoCanvas.height / 2);
-    ctx.restore();
-});
+if (rotateBtn) {
+    rotateBtn.addEventListener('click', () => {
+        if (!currentImage) return;
+        currentRotation = (currentRotation + 90) % 360;
+        const imageData = ctx.getImageData(0, 0, photoCanvas.width, photoCanvas.height);
+        ctx.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
+        
+        ctx.save();
+        ctx.translate(photoCanvas.width / 2, photoCanvas.height / 2);
+        ctx.rotate((currentRotation * Math.PI) / 180);
+        ctx.drawImage(photoCanvas, -photoCanvas.width / 2, -photoCanvas.height / 2);
+        ctx.restore();
+    });
+}
 
 // 錄音功能
-if (recordBtn) {
-    recordBtn.addEventListener('click', async () => {
-    if (!isRecording) {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-
-            mediaRecorder.ondataavailable = (event) => {
-                audioChunks.push(event.data);
-            };
-
-            mediaRecorder.onstop = () => {
-                audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                audioUrl = URL.createObjectURL(audioBlob);
-                playBtn.disabled = false;
-                drawWaveform();
-            };
-
-            mediaRecorder.start();
-            isRecording = true;
-            recordBtn.textContent = '停止錄音';
-            recordBtn.classList.add('recording');
-            recordingTime = 0;
-            recordingTimer = setInterval(() => {
-                recordingTime++;
-                if (recordingTime >= 30) {
-                    stopRecording();
-                }
-            }, 1000);
-        } catch (error) {
-            alert('無法存取麥克風，請檢查權限設定。');
-        }
-    } else {
-        stopRecording();
-    }
-});
-
 function stopRecording() {
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
         mediaRecorder.stream.getTracks().forEach(track => track.stop());
     }
     isRecording = false;
-    recordBtn.textContent = '開始錄音';
-    recordBtn.classList.remove('recording');
+    if (recordBtn) {
+        recordBtn.textContent = '開始錄音';
+        recordBtn.classList.remove('recording');
+    }
     if (recordingTimer) {
         clearInterval(recordingTimer);
         recordingTimer = null;
     }
+}
+
+if (recordBtn) {
+    recordBtn.addEventListener('click', async () => {
+        if (!isRecording) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    audioUrl = URL.createObjectURL(audioBlob);
+                    if (playBtn) {
+                        playBtn.disabled = false;
+                    }
+                    drawWaveform();
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                recordBtn.textContent = '停止錄音';
+                recordBtn.classList.add('recording');
+                recordingTime = 0;
+                recordingTimer = setInterval(() => {
+                    recordingTime++;
+                    if (recordingTime >= 30) {
+                        stopRecording();
+                    }
+                }, 1000);
+            } catch (error) {
+                alert('無法存取麥克風，請檢查權限設定。');
+            }
+        } else {
+            stopRecording();
+        }
+    });
 }
 
 if (playBtn) {
@@ -295,6 +313,7 @@ if (playBtn) {
 }
 
 function drawWaveform() {
+    if (!waveCtx || !waveCanvas) return;
     waveCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
     if (audioChunks.length > 0) {
         waveCtx.fillStyle = '#ff9800';
@@ -311,12 +330,17 @@ function drawWaveform() {
 }
 
 // 初始化波形顯示
-drawWaveform();
+if (waveCtx && waveCanvas) {
+    drawWaveform();
+}
 
 // 上傳按鈕點擊事件
-document.querySelector('.upload-btn').addEventListener('click', () => {
-    fileInput.click();
-});
+const uploadBtn = document.querySelector('.upload-btn');
+if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
+}
 
 } // 關閉 else 區塊（第 34 行的 else）
 

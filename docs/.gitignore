@@ -1,0 +1,9 @@
+# 不需要在 GitHub 上追蹤的文件
+.DS_Store
+Thumbs.db
+*.log
+
+
+
+
+

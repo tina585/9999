@@ -112,7 +112,7 @@ body {
     align-items: center;
     gap: 6px;
     order: 2;
-    margin-top: -140px;
+    margin-top: -120px;
 }
 
 .upload-inline {
@@ -222,7 +222,7 @@ body {
     align-items: center;
     height: 24px;
     pointer-events: none;
-    transform: translateY(74px); /* move further down */
+    transform: translateY(84px); /* move further down */
 }
 
 .guide-arrow-down {
@@ -246,6 +246,7 @@ body {
     font-weight: 700;
     line-height: 1.6;
     margin-bottom: 0;
+    margin-top: 60px;
     text-shadow: none;
     display: inline-block;
     padding: 0;
@@ -339,16 +340,17 @@ body {
     cursor: pointer;
     overflow: hidden;
     transition: transform 0.2s ease, opacity 0.2s ease;
+    transform: translateY(20px);
 }
 
 /* upload-guide removed per request */
 
 .main-circle:hover {
-    transform: scale(1.05);
+    transform: translateY(20px) scale(1.05);
 }
 
 .main-circle:active {
-    transform: scale(0.95);
+    transform: translateY(20px) scale(0.95);
     opacity: 0.8;
 }
 
@@ -415,24 +417,175 @@ body {
     display: none;
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
+/* 響應式設計：適配不同螢幕尺寸 */
+/* 平板和中等螢幕 (769px - 1024px) */
+@media (max-width: 1024px) {
+    .navbar {
+        padding: 0 20px;
+        height: 60px;
+    }
+
+    .navbar-gratitude-text {
+        font-size: 16px;
+    }
+
+    .parent-mode-btn-img {
+        max-width: 55px;
+        max-height: 22px;
+    }
+
     .main-circle {
-        width: 190px;
-        height: 190px;
-        top: 80px;
+        width: 220px;
+        height: 220px;
+    }
+
+    .top-section {
+        min-height: 160px;
+    }
+}
+
+/* 手機橫向和小平板 (481px - 768px) */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0 16px;
+        height: 56px;
+    }
+
+    .navbar-gratitude-text {
+        font-size: 14px;
+    }
+
+    .navbar-logo {
+        width: 40px;
+        height: 40px;
     }
 
     .parent-mode-btn-img {
         max-width: 50px;
         max-height: 20px;
     }
+
+    .main-circle {
+        width: 190px;
+        height: 190px;
+        top: 80px;
+    }
+
+    .top-section {
+        min-height: 140px;
+    }
+
+    .hero-message img {
+        max-width: 70% !important;
+    }
+
+    .photo-fab {
+        width: 60px;
+        height: 60px;
+    }
+
+    .mascot-img {
+        width: 120px;
+        height: auto;
+    }
 }
 
+/* 手機直向 (最大 480px) */
 @media (max-width: 480px) {
+    .navbar {
+        padding: 0 12px;
+        height: 50px;
+    }
+
+    .navbar-gratitude-text {
+        font-size: 12px;
+        letter-spacing: 0.3px;
+    }
+
+    .navbar-logo {
+        width: 35px;
+        height: 35px;
+    }
+
+    .parent-mode-btn-img {
+        max-width: 45px;
+        max-height: 18px;
+    }
+
     .main-circle {
         width: 150px;
         height: 150px;
+        top: 60px;
+    }
+
+    .top-section {
+        min-height: 120px;
+    }
+
+    .hero-message img {
+        max-width: 80% !important;
+    }
+
+    .photo-fab {
+        width: 50px;
+        height: 50px;
+    }
+
+    .photo-fab-text-img {
+        max-width: 80px;
+    }
+
+    .mascot-img {
+        width: 100px;
+        height: auto;
+    }
+}
+
+/* 大螢幕 (1400px 以上) */
+@media (min-width: 1400px) {
+    .navbar {
+        padding: 0 40px;
+        height: 80px;
+    }
+
+    .navbar-gratitude-text {
+        font-size: 20px;
+    }
+
+    .main-circle {
+        width: 280px;
+        height: 280px;
+    }
+
+    .top-section {
+        min-height: 200px;
+    }
+}
+
+/* 超小螢幕 (最大 360px) */
+@media (max-width: 360px) {
+    .navbar {
+        padding: 0 10px;
+        height: 48px;
+    }
+
+    .navbar-gratitude-text {
+        font-size: 11px;
+    }
+
+    .main-circle {
+        width: 130px;
+        height: 130px;
+        top: 50px;
+    }
+
+    .photo-fab {
+        width: 45px;
+        height: 45px;
+    }
+
+    .mascot-img {
+        width: 80px;
     }
 }
 
